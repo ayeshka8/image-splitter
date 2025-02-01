@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Splitter</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        img { max-width: 100%; height: auto; margin: 10px; border: 2px solid #000; }
+    </style>
+</head>
+<body>
+
+    <h1>Upload an Image to Split</h1>
+    <input type="file" id="imageInput">
+    <button onclick="uploadImage()">Upload</button>
+    <div id="result"></div>
+
+    <script>
+        function uploadImage() {
+            let fileInput = document.getElementById("imageInput").files[0];
+            if (!fileInput) { alert("Please select an image!"); return; }
+
+            let formData = new FormData();
+            formData.append("image", fileInput);
+
+            fetch("http://localhost:5000/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.images) {
+                    let resultDiv = document.getElementById("result");
+                    resultDiv.innerHTML = "<h2>Extracted Images:</h2>";
+                    data.images.forEach(img => {
+                        resultDiv.innerHTML += `<img src="http://localhost:5000/${img}" alt="Processed Image">`;
+                    });
+                } else {
+                    alert("Processing failed!");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+
+</body>
+</html>

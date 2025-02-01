@@ -1,0 +1,18 @@
+# Node.js dependencies
+node_modules/
+
+# Python virtual environments
+venv/
+
+# Temporary uploads
+backend/uploads/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# System files
+.DS_Store
+Thumbs.db
