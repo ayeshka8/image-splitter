@@ -24,7 +24,8 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
     try {
         // Send image to Flask for processing
-        const flaskResponse = await axios.post("http://127.0.0.1:5001/process", {
+        const flaskResponse = await axios.post("http://127.0.0.1:5001/process", { //const flaskResponse = await axios.post("http://image-processor:5001/process", { //edited for docker runs
+
             image_path: req.file.filename
         });
 
