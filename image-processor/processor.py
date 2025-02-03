@@ -34,7 +34,7 @@ def non_max_suppression_fast(boxes, overlap_thresh=0.3):
     while len(idxs) > 0:
         last = idxs[-1]
         pick.append(last)
-        suppress = [last]
+        suppress = []
 
         for pos in idxs[:-1]:
             xx1 = max(x1[last], x1[pos])
@@ -47,9 +47,9 @@ def non_max_suppression_fast(boxes, overlap_thresh=0.3):
             overlap = (w * h) / area[pos]
 
             if overlap > overlap_thresh:
-                suppress.append(pos)
+                suppress.append(np.where(idxs == pos)[0][0])
 
-        idxs = np.delete(idxs, suppress)
+        idxs = np.delete(idxs, suppress + [len(idxs) - 1])
 
     return boxes[pick].astype("int")
 
@@ -63,22 +63,19 @@ def process_image():
     image = cv2.imread(image_path)
     original = image.copy()
 
-    # Perform object detection using YOLO
-    results = model(image)
+    # Perform object detection using YOLO with NMS disabled
+    results = model.predict(image, conf=0.25, iou=0.0)  # Disable YOLO's internal NMS
 
     # Extract bounding boxes
     boxes = [box.xyxy[0].cpu().numpy() for box in results[0].boxes]
 
-    # Apply Non-Maximum Suppression (NMS)
-    nms_boxes = non_max_suppression_fast(boxes)
-
-    # Extract and save detected regions
+    # Skip NMS to retain all detected boxes
     images_saved = []
-    for i, (x1, y1, x2, y2) in enumerate(nms_boxes):
+    for i, (x1, y1, x2, y2) in enumerate(boxes):
         x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
 
         # Filter small detections
-        if (x2 - x1) > image.shape[1] * 0.2 and (y2 - y1) > image.shape[0] * 0.2:
+        if (x2 - x1) > image.shape[1] * 0.1 and (y2 - y1) > image.shape[0] * 0.1:  # Reduced threshold
             ROI = original[y1:y2, x1:x2]
             output_path = f"{PROCESSED_FOLDER}split_{i}.png"
             cv2.imwrite(output_path, ROI)
